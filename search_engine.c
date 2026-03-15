@@ -1,13 +1,13 @@
-#include "search_engine.h" // Kendi yazdığımız kütüphaneyi dahil ediyoruz (Tırnak içinde yazılır)
+#include "search_engine.h"
 
-// 1. Metni küçük harfe çeviren yardımcı fonksiyon
+// Metni küçük harfe çeviren fonksiyon
 void toLowerCase(char *str) {
     for (int i = 0; str[i]; i++) {
         str[i] = tolower((unsigned char)str[i]);
     }
 }
 
-// 2. Satır içinde kelime sayan fonksiyon
+// Satır içinde kelime sayan fonksiyon
 int countWordInLine(const char *line, const char *word) {
     int count = 0;
     const char *tmp = line;
@@ -15,17 +15,18 @@ int countWordInLine(const char *line, const char *word) {
 
     while ((tmp = strstr(tmp, word)) != NULL) {
         count++;
-        tmp += wordLen; 
+        tmp += wordLen;
     }
     return count;
 }
 
-// 3. Tek bir dosya içinde arama yapan ana işçi fonksiyon
+// Dosya içinde arama yapan ana işçi fonksiyon
 int searchInSingleFile(const char *filename, const char *searchWord) {
     FILE *file = fopen(filename, "r");
-    
+
     if (file == NULL) {
-        printf("[HATA] '%s' dosyasi okunamadi veya yok. Atlaniyor...\n", filename);
+        // Hata mesajını KIRMIZI yapıyoruz
+        printf(COLOR_RED "[HATA] '%s' dosyasi okunamadi veya yok. Atlaniyor...\n" COLOR_RESET, filename);
         return 0;
     }
 
@@ -37,7 +38,8 @@ int searchInSingleFile(const char *filename, const char *searchWord) {
     strcpy(lowerSearchWord, searchWord);
     toLowerCase(lowerSearchWord);
 
-    printf("\n>>> [%s] dosyasi taraniyor...\n", filename);
+    // Dosya adını SARI ile vurguluyoruz
+    printf(COLOR_YELLOW "\n>>> [%s] dosyasi taraniyor...\n" COLOR_RESET, filename);
 
     while (fgets(buffer, sizeof(buffer), file) != NULL) {
         char lowerLine[MAX_LINE_LENGTH];
@@ -47,13 +49,19 @@ int searchInSingleFile(const char *filename, const char *searchWord) {
         int occurrencesInLine = countWordInLine(lowerLine, lowerSearchWord);
 
         if (occurrencesInLine > 0) {
-            printf("    -> Satir %d: %d kez bulundu.\n", lineNumber, occurrencesInLine);
+            // Ekranda alt alta düzgün görünmesi için orijinal satırın sonundaki 'Enter' (\n) karakterini siliyoruz
+            buffer[strcspn(buffer, "\n")] = 0;
+
+            // Satır numarasını ve bulunan cümleyi CYAN (Açık Mavi) ve YEŞİL kullanarak basıyoruz
+            printf(COLOR_CYAN "    Satir %-4d " COLOR_RESET, lineNumber); // %-4d hizalama yapar
+            printf("| " COLOR_GREEN "(%d kez)" COLOR_RESET " -> %s\n", occurrencesInLine, buffer);
+
             fileOccurrences += occurrencesInLine;
         }
         lineNumber++;
     }
 
     fclose(file);
-    printf("--- [%s] tamamlandi. Bu dosyada %d kez bulundu. ---\n", filename, fileOccurrences);
+    printf("--- [%s] taramasi bitti. Toplam: %d ---\n", filename, fileOccurrences);
     return fileOccurrences;
 }
