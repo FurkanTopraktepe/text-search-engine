@@ -1,4 +1,4 @@
-# BIL1203 - Metin Arama Sistemi (Text Search Engine)
+# Metin Arama Sistemi (Text Search Engine)
 
 Bu proje, İzmir Bakırçay Üniversitesi **BIL1203 Mühendislikte Proje Yönetimi** dersi kapsamında geliştirilmiş bir metin arama motorudur. C programlama dili kullanılarak tasarlanan bu uygulama, kullanıcıdan alınan bir kelimeyi bir veya birden fazla metin dosyası içerisinde arar, frekansını hesaplar ve bulunduğu satır numaralarını raporlar.
 
