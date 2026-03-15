@@ -1,0 +1,4 @@
+Merhaba, bu bir TEST metnidir.
+Test etmek için yazılım geliştiriyoruz.
+Bazı satırlarda test kelimesi birden fazla TEST edilebilir.
+Bu satırda aranan kelime yok.
