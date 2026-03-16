@@ -9,6 +9,7 @@ Bu proje, İzmir Bakırçay Üniversitesi **BIL1203 Mühendislikte Proje Yöneti
 - **Gelişmiş Arama Modları:** - *Normal Arama:* Aranan kelimeyi diğer kelimelerin içinde geçse dahi (örn. "el" araması "elma"yı kapsar) bulur.
   - *Tam Eşleşme (Exact Match):* Sadece bağımsız olarak yazılmış kelimeleri tespit eder.
 - **Bellek Dostu Okuma:** Büyük boyutlu dosyalar bellek taşmasına (overflow) yol açmaması için `fgets` ile satır satır okunur.
+- **Hata Kontrolü ve Güvenlik:** Kullanıcının menü seçimlerinde hatalı giriş yapmasına (örn. harf girmesine) karşı buffer temizleme ve varsayılan atama kontrolleri içerir.
 - **Performans Ölçümü:** Arama işleminin ne kadar sürdüğü milisaniye (ms) cinsinden hesaplanarak raporlanır.
 - **Renkli Terminal Çıktısı:** ANSI renk kodları kullanılarak okunabilirliği yüksek, kullanıcı dostu bir terminal arayüzü sunulur.
 
@@ -22,7 +23,19 @@ Bu proje, İzmir Bakırçay Üniversitesi **BIL1203 Mühendislikte Proje Yöneti
 
 Proje standart C kütüphanelerini kullanmaktadır ve GCC/Clang gibi bir C derleyicisine ihtiyaç duyar. 
 
-Mac/Linux terminalinde veya Windows ortamındaki uygun bir terminalde projeyi derlemek için proje dizininde şu komutu çalıştırın:
+Mac/Linux terminalinde veya Windows ortamındaki uygun bir terminalde (PowerShell/CMD) projeyi derlemek için proje dizininde şu komutu çalıştırın:
 
-```bash
-cc main.c search_engine.c -o arama_motoru
+bash
+gcc main.c search_engine.c -o arama_motoru
+
+
+**Çalıştırmak için:**
+
+Windows ortamında:
+bash
+.\arama_motoru.exe
+
+
+Mac/Linux ortamında:
+bash
+./arama_motoru
