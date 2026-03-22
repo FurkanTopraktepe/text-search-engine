@@ -3,86 +3,97 @@
 #include "search_engine.h"
 
 int main() {
-    char searchWord[MAX_WORD_LENGTH];
-    char fileList[MAX_FILES][MAX_LINE_LENGTH];
-    int fileCount = 0;
-    char tempFilename[MAX_LINE_LENGTH];
-    int searchMode = 1;
+    char searchWord[MAX_WORD_LENGTH];
+    char fileList[MAX_FILES][MAX_LINE_LENGTH];
+    int fileCount = 0;
+    char tempFilename[MAX_LINE_LENGTH];
+    int searchMode = 1;
 
-    printf("================================================\n");
-    printf("               METIN ARAMA SISTEMI          \n");
-    printf("================================================\n\n");
+    // --- LOG DOSYASI HAZIRLIÄžI ---
+    // 'sonuclar.txt' dosyasÄ±nÄ± yazma modunda ("w") aÃ§Ä±yoruz
+    FILE *logFile = fopen("sonuclar.txt", "w");
+    if (logFile == NULL) {
+        printf("Uyari: Rapor dosyasi olusturulamadi, sadece ekrana yazdirilacak.\n");
+    }
 
-    printf("Aranacak kelimeyi giriniz: ");
-    scanf("%255s", searchWord);
+    // --- GÄ°RÄ°Åž EKRANI ---
+    printf("================================================\n");
+    printf("               METIN ARAMA SISTEMI          \n");
+    printf("================================================\n\n");
 
-    // Kullanicidan arama tercihi aliniyor
-    printf("\nArama Modu Seciniz:\n");
-    printf("1 - Normal Arama (Ornek: 'el' kelimesi 'elma' icinde de sayilir)\n");
-    printf("2 - Tam Eslesme (Sadece bagimsiz 'el' kelimesi sayilir)\n");
-    printf("Seciminiz (1/2): ");
-    
-    if (scanf("%d", &searchMode) != 1 || (searchMode != 1 && searchMode != 2)) {
-        printf(COLOR_RED "Hatali secim yaptiniz! Varsayilan olarak Normal Arama (1) secildi.\n" COLOR_RESET);
-        searchMode = 1;
-        
-        // Eger kullanici harf girdiyse, scanf'in takili kalmamasi icin bellegi(buffer) temizliyoruz.
-        int c;
-        while ((c = getchar()) != '\n' && c != EOF); 
-    }
+    printf("Aranacak kelimeyi giriniz: ");
+    scanf("%255s", searchWord);
 
-    int exactMatch = (searchMode == 2) ? 1 : 0;
+    // --- MOD SEÃ‡Ä°MÄ° ---
+    printf("\nArama Modu Seciniz:\n");
+    printf("1 - Normal Arama (Kelime icinde de sayilir)\n");
+    printf("2 - Tam Eslesme (Sadece bagimsiz kelime sayilir)\n");
+    printf("Seciminiz (1/2): ");
+    
+    // HatalÄ± giriÅŸ kontrolÃ¼
+    if (scanf("%d", &searchMode) != 1 || (searchMode != 1 && searchMode != 2)) {
+        printf(COLOR_RED "Hatali secim! Varsayilan olarak Normal Arama secildi.\n" COLOR_RESET);
+        searchMode = 1;
+        int c;
+        while ((c = getchar()) != '\n' && c != EOF); // GiriÅŸ tamponunu temizle
+    }
 
-    printf("\nTaranacak dosya adlarini giriniz (Ornek: metin.txt).\n");
-    printf("Dosya girisini bitirmek icin 'bitir' yaziniz.\n");
-    printf("------------------------------------------------\n");
+    int exactMatch = (searchMode == 2) ? 1 : 0;
 
-    // Kullanici bitir yazana kadar veya max dosya sayisina ulasana kadar dosya adlarini aliyoruz
-    while (fileCount < MAX_FILES) {
-        printf("%d. Dosya adi: ", fileCount + 1);
-        scanf("%255s", tempFilename);
+    // --- DOSYA LÄ°STESÄ° ALMA ---
+    printf("\nTaranacak dosya adlarini giriniz (Bitirmek icin 'bitir' yaziniz).\n");
+    while (fileCount < MAX_FILES) {
+        printf("%d. Dosya adi: ", fileCount + 1);
+        scanf("%255s", tempFilename);
 
-        if (strcmp(tempFilename, "bitir") == 0) {
-            break;
-        }
+        if (strcmp(tempFilename, "bitir") == 0) break;
 
-        strcpy(fileList[fileCount], tempFilename);
-        fileCount++;
-    }
+        strcpy(fileList[fileCount], tempFilename);
+        fileCount++;
+    }
 
-    if (fileCount == 0) {
-        printf("\nHic dosya girilmedi. Program kapatiliyor.\n");
-        return 0;
-    }
+    if (fileCount == 0) {
+        printf("\nHic dosya girilmedi. Program kapatiliyor.\n");
+        if(logFile) fclose(logFile);
+        return 0;
+    }
 
-    printf("\n================ SONUCLAR ==================\n");
+    printf("\n================ SONUCLAR ==================\n");
+    if(logFile) fprintf(logFile, "--- ARAMA DETAYLARI ---\n");
 
-    // Arama suresini olcmek icin saati baslatiyoruz
-    clock_t startTime = clock();
-    int grandTotalOccurrences = 0;
+    // --- ARAMA Ä°ÅžLEMÄ° VE ZAMAN Ã–LÃ‡ÃœMÃœ ---
+    clock_t startTime = clock(); // SÃ¼re Ã¶lÃ§Ã¼mÃ¼nÃ¼ baÅŸlat
+    int grandTotalOccurrences = 0;
 
-    // Girilen butun dosyalari donguyle arama fonksiyonuna gonderiyoruz
-    for (int i = 0; i < fileCount; i++) {
-        grandTotalOccurrences += searchInSingleFile(fileList[i], searchWord, exactMatch);
-    }
+    for (int i = 0; i < fileCount; i++) {
+        // Her dosya iÃ§in arama fonksiyonunu Ã§aÄŸÄ±r ve sonuÃ§larÄ± topla
+        grandTotalOccurrences += searchInSingleFile(fileList[i], searchWord, exactMatch, logFile);
+    }
 
-    clock_t endTime = clock();
-    // Gecen sureyi milisaniye cinsinden hesapliyoruz
-    double timeSpent = (double)(endTime - startTime) / CLOCKS_PER_SEC * 1000.0;
+    clock_t endTime = clock(); // SÃ¼re Ã¶lÃ§Ã¼mÃ¼nÃ¼ bitir
+    double timeSpent = (double)(endTime - startTime) / CLOCKS_PER_SEC * 1000.0;
 
-    // Proje isterlerindeki raporlama kismi
-    printf("\n================ PROJE RAPORU ==================\n");
-    printf("Aranan Kelime    : %s\n", searchWord);
-    printf("Arama Modu       : %s\n", exactMatch ? "Tam Eslesme" : "Normal Arama");
-    printf("Taranan Dosya    : %d adet\n", fileCount);
-    printf("Toplam Frekans   : %d\n", grandTotalOccurrences);
-    
-    if (grandTotalOccurrences == 0) {
-        printf(COLOR_RED "Uyari            : Aranan kelime hicbir dosyada bulunamadi!\n" COLOR_RESET);
-    }
+    // --- FÄ°NAL RAPORU (Hem Ekrana Hem Dosyaya) ---
+    printf("\n================ PROJE RAPORU ==================\n");
+    printf("Aranan Kelime    : %s\n", searchWord);
+    printf("Arama Modu       : %s\n", exactMatch ? "Tam Eslesme" : "Normal Arama");
+    printf("Taranan Dosya    : %d adet\n", fileCount);
+    printf("Toplam Frekans   : %d\n", grandTotalOccurrences);
+    printf("Arama Suresi     : %.2f ms\n", timeSpent);
+    printf("================================================\n");
 
-    printf("Arama Suresi     : %.2f ms\n", timeSpent);
-    printf("================================================\n");
+    if(logFile) {
+        fprintf(logFile, "\n================ PROJE RAPORU ==================\n");
+        fprintf(logFile, "Aranan Kelime    : %s\n", searchWord);
+        fprintf(logFile, "Arama Modu       : %s\n", exactMatch ? "Tam Eslesme" : "Normal Arama");
+        fprintf(logFile, "Taranan Dosya    : %d adet\n", fileCount);
+        fprintf(logFile, "Toplam Frekans   : %d\n", grandTotalOccurrences);
+        fprintf(logFile, "Arama Suresi     : %.2f ms\n", timeSpent);
+        fprintf(logFile, "================================================\n");
+        
+        fclose(logFile); // Log dosyasÄ±nÄ± gÃ¼venli bir ÅŸekilde kapat
+        printf("\nTum sonuclar 'sonuclar.txt' dosyasina kaydedildi.\n");
+    }
 
-    return 0;
+    return 0;
 }
